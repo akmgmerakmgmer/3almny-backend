@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filter';
 import cookieParser from 'cookie-parser';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express, { Request, Response } from 'express';
+const express = require('express');
 
 // Create Express app instance for serverless
 const expressApp = express();
