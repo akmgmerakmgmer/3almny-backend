@@ -11,10 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatController = void 0;
 const common_1 = require("@nestjs/common");
-const puppeteer_1 = require("puppeteer");
+const puppeteer_1 = __importDefault(require("puppeteer"));
 const chat_service_1 = require("./chat.service");
 const title_generator_service_1 = require("./title-generator.service");
 const users_service_1 = require("../users/users.service");

@@ -287,7 +287,7 @@ export declare class ChatController {
         success: boolean;
         data: {
             courses: import("./course-recommendation.service").CourseRecommendation[];
-            language: "ar" | "en";
+            language: "en" | "ar";
             topic: string;
         };
     }>;

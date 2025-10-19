@@ -34,8 +34,9 @@ async function createApp() {
 
 async function bootstrap() {
   const app = await createApp();
-  await app.listen(process.env.PORT || 4000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  const port = process.env.PORT || 4000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running on: http://localhost:${port}`);
 }
 
 // For local development
