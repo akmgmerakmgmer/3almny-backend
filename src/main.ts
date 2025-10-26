@@ -16,10 +16,29 @@ async function createApp() {
   }
 
   const adapter = new ExpressAdapter(expressApp);
+  const allowedOrigins = process.env.FRONTEND_ORIGIN 
+    ? process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim())
+    : ['http://localhost:3000', 'http://localhost:3001'];
+  
   const app = await NestFactory.create(AppModule, adapter, {
     cors: {
-      origin: process.env.FRONTEND_ORIGIN || true,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) {
+          return callback(null, true);
+        }
+        // Check if origin is allowed
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+          callback(null, true);
+        } else {
+          console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+          callback(null, true); // Allow all for now, you can change this to callback(new Error('Not allowed')) for stricter security
+        }
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+      exposedHeaders: ['Set-Cookie'],
     },
   });
   

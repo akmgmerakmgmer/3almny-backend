@@ -45,35 +45,53 @@ export class AuthController {
 
   private setAuthCookie(res: Response, token: string) {
     const sevenDaysMs = 1000 * 60 * 60 * 24 * 7;
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // For cross-origin cookies on different domains, use 'none' with secure
+    const sameSite = process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none' || (isProduction ? 'none' : 'lax');
+    const secure = isProduction || sameSite === 'none';
+    
+    // Get domain from environment or leave undefined for subdomain flexibility
+    const domain = process.env.COOKIE_DOMAIN || undefined;
+    
     res.cookie('access_token', token, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: sameSite,
+      secure: secure,
       maxAge: sevenDaysMs,
       path: '/',
+      ...(domain ? { domain } : {}),
     });
     // Non-sensitive presence cookie for frontend middleware gating.
     res.cookie('authp', '1', {
       httpOnly: false,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: sameSite,
+      secure: secure,
       maxAge: sevenDaysMs,
       path: '/',
+      ...(domain ? { domain } : {}),
     });
   }
 
   private clearAuthCookies(res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const sameSite = process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none' || (isProduction ? 'none' : 'lax');
+    const secure = isProduction || sameSite === 'none';
+    const domain = process.env.COOKIE_DOMAIN || undefined;
+    
     res.clearCookie('access_token', {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: sameSite,
+      secure: secure,
       path: '/',
+      ...(domain ? { domain } : {}),
     });
     res.clearCookie('authp', {
       httpOnly: false,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: sameSite,
+      secure: secure,
       path: '/',
+      ...(domain ? { domain } : {}),
     });
   }
 }
