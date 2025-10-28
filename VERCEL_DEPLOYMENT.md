@@ -1,6 +1,6 @@
 # Vercel Deployment Configuration
 
-This document explains how to configure your backend for deployment on Vercel with proper CORS and cookie handling.
+This document explains how to configure your backend for deployment on Vercel with JWT authentication.
 
 ## Environment Variables
 
@@ -15,25 +15,18 @@ You need to set the following environment variables in your Vercel project setti
 
 2. **`NODE_ENV`**
    - Set to `production` when deploying to Vercel
-   - This ensures cookies use secure flag and proper sameSite settings
 
-### Optional Variables
+### Optional Variables (No longer needed with JWT)
 
-3. **`COOKIE_SAME_SITE`**
-   - Set to `'none'` if frontend and backend are on different domains
-   - Options: `'lax'`, `'strict'`, or `'none'`
-   - Defaults to `'none'` in production if not set
+The following environment variables are NOT needed with JWT token authentication:
+- ~~`COOKIE_SAME_SITE`~~ - No longer needed
+- ~~`COOKIE_DOMAIN`~~ - No longer needed
 
-4. **`COOKIE_DOMAIN`**
-   - Only needed if using a shared domain pattern
-   - Example: `.yourdomain.com` for sharing cookies across subdomains
-   - Usually not needed for separate Vercel deployments
-
-### Other Variables
+### Other Required Variables
 
 Make sure you also have:
-- `JWT_SECRET` - Secret key for JWT signing
-- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - Secret key for JWT signing (REQUIRED)
+- `MONGODB_URI` - MongoDB connection string (REQUIRED)
 - `GOOGLE_CLIENT_ID` (if using Google OAuth) - Google OAuth client ID
 - Any other API keys your backend needs
 
@@ -52,33 +45,35 @@ In your frontend Vercel project, set:
 
 The backend now properly handles CORS with:
 - Configurable allowed origins via `FRONTEND_ORIGIN`
-- Credentials support for cookies
+- Credentials support for cookies (maintained for compatibility)
 - All HTTP methods (GET, POST, PUT, DELETE, PATCH, OPTIONS)
-- Proper headers for cookie transmission
+- Proper headers for JWT token transmission: `Content-Type`, `Authorization`
 
-### Cookie Configuration
+### JWT Token Authentication
 
-Cookies are configured to work across domains:
-- **SameSite**: Automatically set to `'none'` in production (required for cross-origin cookies)
-- **Secure**: Automatically `true` in production or when SameSite is 'none'
-- **HttpOnly**: `true` for access_token (security)
-- **HttpOnly**: `false` for authp cookie (needed for Next.js middleware)
+Authentication now uses JWT tokens:
+- Tokens are sent in the `Authorization: Bearer <token>` header
+- Tokens are stored on the client in localStorage
+- Tokens expire after 15 minutes
+- No cookies required for authentication
 
 ## Troubleshooting
 
-### Issue: Cookies not being sent/set
+### Issue: CORS errors on Vercel
 
 **Solutions:**
-1. Make sure `FRONTEND_ORIGIN` is set to your exact frontend URL
-2. Set `COOKIE_SAME_SITE=none` if domains are different
-3. Verify `NEXT_PUBLIC_API_BASE` points to your backend URL
-
-### Issue: CORS errors
-
-**Solutions:**
-1. Check that `FRONTEND_ORIGIN` includes your frontend URL
+1. Make sure `FRONTEND_ORIGIN` is set to your exact frontend URL in Vercel
 2. Check browser console for specific CORS error messages
-3. Verify credentials: 'include' is set in frontend fetch calls
+3. Verify that your frontend URL matches what's in `FRONTEND_ORIGIN`
+4. Ensure both `allowedHeaders` and `exposedHeaders` include 'Authorization'
+
+### Issue: Authentication not working
+
+**Solutions:**
+1. Check that `JWT_SECRET` is set in Vercel backend environment variables
+2. Verify that tokens are being stored in localStorage on the frontend
+3. Check browser Network tab to see if `Authorization` header is being sent
+4. Check Vercel function logs for authentication errors
 
 ### Issue: APIs loading but failing
 
@@ -87,6 +82,7 @@ Cookies are configured to work across domains:
 2. Verify all environment variables are set
 3. Make sure both frontend and backend are deployed on Vercel
 4. Check that `NEXT_PUBLIC_API_BASE` points to the correct backend URL
+5. Ensure `MONGODB_URI` is properly configured
 
 ## Example Configuration
 
@@ -94,7 +90,6 @@ Cookies are configured to work across domains:
 ```
 FRONTEND_ORIGIN=https://your-frontend.vercel.app
 NODE_ENV=production
-COOKIE_SAME_SITE=none
 JWT_SECRET=your-secret-key
 MONGODB_URI=your-mongodb-connection-string
 ```
@@ -111,7 +106,6 @@ For local development, these are the default configurations:
 - **Frontend**: Runs on `http://localhost:3000` or `3001`
 - **Backend**: Runs on `http://localhost:4000`
 - **CORS**: Automatically allows localhost origins
-- **Cookies**: Uses `SameSite: 'lax'` and `secure: false`
+- **JWT**: Uses same configuration as production
 
 No additional configuration needed for local development.
-
