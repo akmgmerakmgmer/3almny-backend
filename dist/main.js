@@ -16,20 +16,10 @@ async function createApp() {
     const allowedOrigins = process.env.FRONTEND_ORIGIN
         ? process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim())
         : ['http://localhost:3000', 'http://localhost:3001'];
+    expressApp.set('trust proxy', 1);
     const app = await core_1.NestFactory.create(app_module_1.AppModule, adapter, {
         cors: {
-            origin: (origin, callback) => {
-                if (!origin) {
-                    return callback(null, true);
-                }
-                if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
-                    callback(null, true);
-                }
-                else {
-                    console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
-                    callback(null, true);
-                }
-            },
+            origin: '*',
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],

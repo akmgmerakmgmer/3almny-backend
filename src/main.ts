@@ -15,35 +15,25 @@ async function createApp() {
   }
 
   const adapter = new ExpressAdapter(expressApp);
-  const allowedOrigins = process.env.FRONTEND_ORIGIN 
+  const allowedOrigins = process.env.FRONTEND_ORIGIN
     ? process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim())
     : ['http://localhost:3000', 'http://localhost:3001'];
-  
+
+  expressApp.set('trust proxy', 1);
   const app = await NestFactory.create(AppModule, adapter, {
     cors: {
-      origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin) {
-          return callback(null, true);
-        }
-        // Check if origin is allowed
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
-          callback(null, true);
-        } else {
-          console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
-          callback(null, true); // Allow all for now, you can change this to callback(new Error('Not allowed')) for stricter security
-        }
-      },
+      origin: '*',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       exposedHeaders: ['Content-Type', 'Authorization'],
+      // removed duplicated "origin" property
     },
   });
-  
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new GlobalHttpExceptionFilter());
-  
+
   await app.init();
   cachedApp = app;
   return app;
