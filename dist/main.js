@@ -19,11 +19,28 @@ async function createApp() {
     expressApp.set('trust proxy', 1);
     const app = await core_1.NestFactory.create(app_module_1.AppModule, adapter, {
         cors: {
-            origin: '*',
+            origin: (origin, callback) => {
+                if (!origin) {
+                    return callback(null, true);
+                }
+                if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+                    callback(null, true);
+                }
+                else {
+                    console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+                    if (process.env.NODE_ENV === 'production') {
+                        callback(new Error('Not allowed by CORS'));
+                    }
+                    else {
+                        callback(null, true);
+                    }
+                }
+            },
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             exposedHeaders: ['Content-Type', 'Authorization'],
+            maxAge: 86400,
         },
     });
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));

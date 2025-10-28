@@ -20,14 +20,33 @@ async function createApp() {
     : ['http://localhost:3000', 'http://localhost:3001'];
 
   expressApp.set('trust proxy', 1);
+  
   const app = await NestFactory.create(AppModule, adapter, {
     cors: {
-      origin: '*',
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) {
+          return callback(null, true);
+        }
+        // Check if origin is allowed
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+          callback(null, true);
+        } else {
+          console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+          // For production, only allow specific origins for security
+          // In development, allow all for easier testing
+          if (process.env.NODE_ENV === 'production') {
+            callback(new Error('Not allowed by CORS'));
+          } else {
+            callback(null, true);
+          }
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       exposedHeaders: ['Content-Type', 'Authorization'],
-      // removed duplicated "origin" property
+      maxAge: 86400, // Cache preflight requests for 24 hours
     },
   });
 
