@@ -43,8 +43,9 @@ export class AuthService {
 
   private withTokens(user: any) {
     const publicUser = toPublicUser(user);
-    // Access token currently signed without explicit expiresIn here; default configured in JwtModule (if any).
-    // Because we now persist the cookie for 7 days, strongly consider adding an expiresIn (e.g., 15m) and issuing a refresh token instead.
+    // Access token expires in 15 minutes as configured in JwtModule.
+    // The token is returned in the response body and should be stored on the client.
+    // Consider implementing refresh token mechanism for better security.
     const accessToken = this.jwt.sign({ sub: publicUser.id, email: publicUser.email, provider: publicUser.provider });
     return { user: publicUser, tokens: { accessToken } };
   }

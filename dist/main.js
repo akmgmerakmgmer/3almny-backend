@@ -1,13 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const common_1 = require("@nestjs/common");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const platform_express_1 = require("@nestjs/platform-express");
 const express = require('express');
 const expressApp = express();
@@ -17,13 +13,28 @@ async function createApp() {
         return cachedApp;
     }
     const adapter = new platform_express_1.ExpressAdapter(expressApp);
+    const allowedOrigins = process.env.FRONTEND_ORIGIN
+        ? process.env.FRONTEND_ORIGIN.split(',').map(o => o.trim())
+        : ['http://localhost:3000', 'http://localhost:3001'];
     const app = await core_1.NestFactory.create(app_module_1.AppModule, adapter, {
         cors: {
-            origin: process.env.FRONTEND_ORIGIN || true,
+            origin: (origin, callback) => {
+                if (!origin) {
+                    return callback(null, true);
+                }
+                if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+                    callback(null, true);
+                }
+                else {
+                    console.warn(`CORS: Origin ${origin} not allowed. Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+                    callback(null, true);
+                }
+            },
             credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
         },
     });
-    app.use((0, cookie_parser_1.default)());
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
     app.useGlobalFilters(new http_exception_filter_1.GlobalHttpExceptionFilter());
     await app.init();

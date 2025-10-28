@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { GlobalHttpExceptionFilter } from './common/filters/http-exception.filter';
-import cookieParser from 'cookie-parser';
 import { ExpressAdapter } from '@nestjs/platform-express';
 const express = require('express');
 
@@ -37,12 +36,10 @@ async function createApp() {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-      exposedHeaders: ['Set-Cookie'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     },
   });
   
-  app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new GlobalHttpExceptionFilter());
   

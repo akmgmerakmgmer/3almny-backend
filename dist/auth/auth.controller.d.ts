@@ -2,26 +2,29 @@ import { AuthService } from './auth.service';
 import { LocalSignupDto } from './dto/local-signup.dto';
 import { LocalLoginDto } from './dto/local-login.dto';
 import { GoogleSignupDto } from './dto/google-signup.dto';
-import { Response, Request } from 'express';
+import { Request } from 'express';
 export declare class AuthController {
     private readonly auth;
     constructor(auth: AuthService);
-    signupLocal(dto: LocalSignupDto, res: Response): Promise<{
+    signupLocal(dto: LocalSignupDto): Promise<{
         success: boolean;
         data: {
             user: import("../users/mappers/public-user.mapper").PublicUserDto;
+            accessToken: string;
         };
     }>;
-    loginLocal(dto: LocalLoginDto, res: Response): Promise<{
+    loginLocal(dto: LocalLoginDto): Promise<{
         success: boolean;
         data: {
             user: import("../users/mappers/public-user.mapper").PublicUserDto;
+            accessToken: string;
         };
     }>;
-    signupGoogle(dto: GoogleSignupDto, res: Response): Promise<{
+    signupGoogle(dto: GoogleSignupDto): Promise<{
         success: boolean;
         data: {
             user: import("../users/mappers/public-user.mapper").PublicUserDto;
+            accessToken: string;
         };
     }>;
     me(req: Request): {
@@ -30,9 +33,7 @@ export declare class AuthController {
             user: any;
         };
     };
-    logout(res: Response): Promise<{
+    logout(): Promise<{
         success: boolean;
     }>;
-    private setAuthCookie;
-    private clearAuthCookies;
 }

@@ -23,83 +23,45 @@ let AuthController = class AuthController {
     constructor(auth) {
         this.auth = auth;
     }
-    async signupLocal(dto, res) {
+    async signupLocal(dto) {
         const { user, tokens } = await this.auth.localSignup(dto.username, dto.email, dto.password);
-        this.setAuthCookie(res, tokens.accessToken);
-        return { success: true, data: { user } };
+        return { success: true, data: { user, accessToken: tokens.accessToken } };
     }
-    async loginLocal(dto, res) {
+    async loginLocal(dto) {
         const { user, tokens } = await this.auth.localLogin(dto.email, dto.password);
-        this.setAuthCookie(res, tokens.accessToken);
-        return { success: true, data: { user } };
+        return { success: true, data: { user, accessToken: tokens.accessToken } };
     }
-    async signupGoogle(dto, res) {
+    async signupGoogle(dto) {
         const { user, tokens } = await this.auth.googleSignup(dto.idToken);
-        this.setAuthCookie(res, tokens.accessToken);
-        return { success: true, data: { user } };
+        return { success: true, data: { user, accessToken: tokens.accessToken } };
     }
     me(req) {
         return { success: true, data: { user: req.user } };
     }
-    async logout(res) {
-        this.clearAuthCookies(res);
+    async logout() {
         return { success: true };
-    }
-    setAuthCookie(res, token) {
-        const sevenDaysMs = 1000 * 60 * 60 * 24 * 7;
-        res.cookie('access_token', token, {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: sevenDaysMs,
-            path: '/',
-        });
-        res.cookie('authp', '1', {
-            httpOnly: false,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: sevenDaysMs,
-            path: '/',
-        });
-    }
-    clearAuthCookies(res) {
-        res.clearCookie('access_token', {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            path: '/',
-        });
-        res.clearCookie('authp', {
-            httpOnly: false,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            path: '/',
-        });
     }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('signup'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [local_signup_dto_1.LocalSignupDto, Object]),
+    __metadata("design:paramtypes", [local_signup_dto_1.LocalSignupDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signupLocal", null);
 __decorate([
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [local_login_dto_1.LocalLoginDto, Object]),
+    __metadata("design:paramtypes", [local_login_dto_1.LocalLoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "loginLocal", null);
 __decorate([
     (0, common_1.Post)('google'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [google_signup_dto_1.GoogleSignupDto, Object]),
+    __metadata("design:paramtypes", [google_signup_dto_1.GoogleSignupDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signupGoogle", null);
 __decorate([
@@ -112,9 +74,8 @@ __decorate([
 ], AuthController.prototype, "me", null);
 __decorate([
     (0, common_1.Post)('logout'),
-    __param(0, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 exports.AuthController = AuthController = __decorate([
