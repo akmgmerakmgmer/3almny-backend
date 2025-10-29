@@ -1,2 +1,2 @@
-declare const _default: (req: Request, res: Response) => Promise<any>;
+declare const _default: (req: any, res: any) => Promise<any>;
 export default _default;

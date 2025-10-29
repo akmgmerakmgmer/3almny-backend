@@ -59,7 +59,14 @@ if (process.env.NODE_ENV !== 'production') {
     bootstrap();
 }
 exports.default = async (req, res) => {
-    await createApp();
-    return expressApp(req, res);
+    try {
+        const app = await createApp();
+        const expressApp = app.getHttpAdapter().getInstance();
+        return expressApp(req, res);
+    }
+    catch (error) {
+        console.error('Vercel handler error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 //# sourceMappingURL=main.js.map

@@ -8,6 +8,7 @@
     "dev": "npm run start:dev",
     "dev:nodemon": "nodemon --watch src --exec ts-node -r tsconfig-paths/register src/main.ts",
     "build": "nest build",
+    "vercel-build": "npm run build",
     "lint": "eslint 'src/**/*.ts'"
   },
   "dependencies": {

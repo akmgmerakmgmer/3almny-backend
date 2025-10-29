@@ -71,8 +71,14 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Export for Vercel serverless
-export default async (req: Request, res: Response) => {
-  await createApp();
-  return expressApp(req, res);
+export default async (req: any, res: any) => {
+  try {
+    const app = await createApp();
+    const expressApp = app.getHttpAdapter().getInstance();
+    return expressApp(req, res);
+  } catch (error) {
+    console.error('Vercel handler error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
